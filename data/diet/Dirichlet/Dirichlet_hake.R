@@ -11,55 +11,33 @@ theme_set(theme_sleek_transparent())
 
 ### Update data, run Dirichlet ------------------------------------------------
 run_Dirichlet <- function(data, name) {
-  # Get total stomach weights for each predator and proportional weight for prey hake
-  aged_wt <- data[, c("Predator_ID", "year", "predator_age", "prey_name", "prey_age", "prey_wt")] %>%
+  data <- aged_dataset 
+  
+  stomach_wt <- data %>%
     group_by(Predator_ID) %>%
-    mutate(stomach_wt = sum(prey_wt, na.rm = TRUE)) %>%
-    filter(prey_name == "Pacific Hake") %>%
-    mutate(hake_prey_prop = prey_wt / stomach_wt) %>%
-    ungroup() %>%
-    distinct()  # Remove duplicate rows - same pred ID, multiple hake prey
+    summarize(stomach_wt = sum(prey_wt))
   
-  aged_wt$new_ID <- c(1:nrow(aged_wt))
+  stomach_wt[is.na(stomach_wt)] <- 0
   
-  # Subset dataset for only those hake that had no prey hake and assign proportion of diet as entirely "other"
-  no_hake_dirichlet <- data %>%
-    select(Predator_ID, year, predator_age, prey_name, prey_age, prey_wt) %>%
-    group_by(Predator_ID) %>%
-    filter(prey_name != "Pacific Hake") %>%
-    ungroup() %>%
-    select(Predator_ID, predator_age) %>%  
-    mutate(predator_age = as.numeric(predator_age)) %>%
-    distinct()
-  no_hake_dirichlet$prey_age <- rep("other", nrow(no_hake_dirichlet))
-  no_hake_dirichlet$hake_prey_prop <- rep(1, nrow(no_hake_dirichlet))
+  data2 <- merge(data, stomach_wt, by = "Predator_ID") %>%
+    distinct() %>%
+    select(predator_age, prey_age, prey_wt, stomach_wt) %>%
+    arrange(predator_age) %>%
+    arrange(prey_age)
+
+  data2$prey1 <- ifelse(data2$prey_age == 1, data2$prey_wt/data2$stomach_wt, 0)
+  data2$prey2 <- ifelse(data2$prey_age == 2, data2$prey_wt/data2$stomach_wt, 0)
+  data2$prey3 <- ifelse(data2$prey_age == 3, data2$prey_wt/data2$stomach_wt, 0)
+  data2$prey5 <- ifelse(data2$prey_age == 5, data2$prey_wt/data2$stomach_wt, 0)
+  data2$prey_age[is.na(data2$prey_age)] <- "other"
+  data2[is.na(data2)] <- 0
   
-  # Select columns from hake cannibalism dataset
-  hake_dirichlet <- aged_wt %>%
-    select(Predator_ID, predator_age, prey_age, hake_prey_prop)
+  data3 <- data2[, -c(2:4)]
+  data3$other <- (1 - rowSums(data3[, -1]))
   
-  # Combine together and turn into wide format for Dirichlet script
-  for_dirichlet <- rbind(hake_dirichlet, no_hake_dirichlet) %>%
-    mutate(new_ID = c(1:length(Predator_ID))) %>%
-    select(new_ID, predator_age, prey_age, hake_prey_prop) %>%
-    pivot_wider(id_cols = c(new_ID, predator_age),  # rows to stay the same
-                names_from = prey_age,  # columns to convert to wide
-                values_from = hake_prey_prop,  # values to fill in
-                values_fill = 0) %>%  # what to fill for missing values 
-    arrange(predator_age)
-  
-  # Re-order and rename data for final dataset
-  for_dirichlet <- for_dirichlet[, -1]
-  colnames(for_dirichlet)[1] <- c("Predator")
-  unique(as.character(for_dirichlet$Predator))
-  
-  # Add "wtg" column from Dirichlet example dataset
-  for_dirichlet <- cbind(for_dirichlet[, 1], 
-                         wtg = rep(1, length(for_dirichlet[, 1])),
-                         for_dirichlet[, 2:(ncol(for_dirichlet) - 1)])
-  
-  # Update "other" column to include remainder from hake on hake stomachs
-  for_dirichlet$other <- (1 - rowSums(for_dirichlet[, -c(1, 2), drop = FALSE]))
+  for_dirichlet <- cbind(Predator = data3[, 1], 
+                         wtg = rep(1, length(data3[, 1])),
+                         data3[, 2:(ncol(data3))])
   
  
   ### Run Dirichlet script ------------------------------------------------------
