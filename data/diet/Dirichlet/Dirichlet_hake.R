@@ -566,7 +566,7 @@ comparison <- comparison %>% filter(prey_age <= 5)
 
 comparison_plot <- ggplot(comparison, aes(x=pred_age, y=prop, fill=factor(prey_age))) +
   geom_bar(stat = "identity", position = "stack") +
-  scale_x_discrete(limits = factor(1:15)) +  # add in missing predator ages
+  scale_x_discrete(limits = factor(0:20)) +  # add in missing predator ages
   scale_y_continuous(limits = c(0, 1), labels = scales::label_number(accuracy = NULL)) +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   xlab("predator hake age") + ylab("diet proportion by weight") +
@@ -592,7 +592,7 @@ comp2 <- comp2 %>% filter(prey_age <= 5)
 
 comp2_plot <- ggplot(comp2, aes(x=pred_age, y=prop, fill=factor(prey_age))) +
   geom_bar(stat = "identity", position = "stack") +
-  scale_x_discrete(limits = factor(1:15), breaks = c(1, 3, 5, 7, 9, 11, 13, 15)) +  # add in missing predator ages
+  scale_x_discrete(limits = factor(0:20), breaks = c(1, 3, 5, 7, 9, 11, 13, 15)) +  # add in missing predator ages
   scale_y_continuous(limits = c(0, 1), labels = scales::label_number(accuracy = NULL)) +
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   xlab("predator hake age") + ylab("diet proportion") +

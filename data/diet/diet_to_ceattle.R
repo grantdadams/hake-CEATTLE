@@ -35,7 +35,7 @@ hake_prop <- aged_wt %>%
 # Plot diet data
 diet_plot <- ggplot(hake_prop, aes(x=as.factor(predator_age), y=wt_prop, fill=as.factor(prey_age))) +
   geom_bar(stat = "identity", position = "stack") +
-  scale_x_discrete(limits = factor(1:15)) +  # add in missing predator ages
+  scale_x_discrete(limits = factor(0:20)) +  # add in missing predator ages
   scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
   xlab("predator hake age") + ylab("diet proportion by weight") +
   labs(fill = "prey hake age")
@@ -47,10 +47,10 @@ ggsave(filename = "plots/diet/cannibalism_overall.png", diet_plot,
 
 ### Get data ready to be added directly to CEATTLE ----------------------------
 # Create empty dataframe in shape for CEATTLE
-all_ages <- data.frame(predator_age = rep(1:15, each = 15),
-                       prey_age = rep(1:15, 15),
-                       sample_size = rep(NA, 225),
-                       wt_prop = rep(NA, 225))
+all_ages <- data.frame(predator_age = rep(0:20, each = 21),
+                       prey_age = rep(0:20, 21),
+                       sample_size = rep(NA, 441),
+                       wt_prop = rep(NA, 441))
 
 # Merge with data
 to_ceattle <- hake_prop %>%

@@ -16,10 +16,32 @@ all_prey <- read.csv("data/diet/CCTD/hake_prey.csv")
 
 
 ### Parameterize length to age calculation  -----------------------------------
-hake_ages <- 0:15
+hake_ages <- 0:20
 
 # Read in maturity data
 maturity <- read.csv("~/Desktop/Local/hake-CEATTLE/Resources/hake-assessment-master/data/hake-maturity-data.csv")
+
+# Mean Length at age (this is Mn_LatAge in the CEATTLE input excel sheet)
+mean_lengths <- maturity %>% group_by(Age) %>%
+  summarise(Length = mean(Length_cm))
+
+# Set up hake age-length key - this is for age_trans_matrix
+hake_lbin <- c(0, seq(20, 68, by = 2), 999)
+hake_age_bin <- c(0:19 + 0.5, 99)
+hake_ages <- 0:20
+
+maturity$BIN <- cut(maturity$Length_cm, breaks = hake_lbin)
+levels(maturity$BIN) <- 1:length(hake_lbin[-1])
+
+maturity$AgeBIN <- cut(maturity$Age, breaks = hake_age_bin)
+levels(maturity$AgeBIN) <- hake_ages
+
+hake <- maturity[-which(is.na(maturity$AgeBIN)),]
+hake_table <- with(hake,table(BIN,AgeBIN))
+alk_hake <- prop.table(hake_table, margin=1)
+alk_hake[is.na(alk_hake)] <- 0
+age_trans_matrix <- t(as.data.frame.matrix(alk_hake))
+write.csv(age_trans_matrix, "data/assessment/age_trans_matrix.csv", row.names = FALSE)
 
 # Estimate VBGF (http://derekogle.com/fishR/2019-12-31-ggplot-vonB-fitPlot-1)
 vb <- vbFuns(param="Typical")  # define von Bert function
@@ -46,11 +68,11 @@ pred_ages <- age_calc(lengths = all_pred$FL_cm,
 # Add ages column to predator dataset 
 new_pred <- cbind(all_pred, pred_ages)
 # Fill in age = 15 for any length > Linf
-new_pred$pred_ages[new_pred$FL_cm > params[1]] <- 15
+new_pred$pred_ages[new_pred$FL_cm > params[1]] <- 20
 # Round to whole number 
 new_pred$pred_ages <- round(new_pred$pred_ages, digits = 0)
 # Set any ages > 15 to 15 (accumulator age)
-new_pred$pred_ages[new_pred$pred_ages > 15] <- 15
+new_pred$pred_ages[new_pred$pred_ages > 20] <- 20
 
 
 ### Run prey age calculation --------------------------------------------------
@@ -116,26 +138,6 @@ write.csv(new_prey, "data/diet/CCTD/hake_aged_prey.csv", row.names = FALSE)
 
 
 # ### Age-length key method for ageing ------------------------------------------
-# # Mean Length at age (this is Mn_LatAge in the CEATTLE input excel sheet)
-# mean_lengths <- maturity %>% group_by(Age) %>% 
-#   summarise(Length = mean(Length_cm))
-# 
-# # Set up hake age-length key
-# hake_lbin <- c(0, seq(23, 56, by = 1), 999)
-# hake_age_bin <- c(0:14 + 0.5, 99)
-# hake_ages <- 1:15
-# 
-# maturity$BIN <- cut(maturity$Length_cm, breaks = hake_lbin)
-# levels(maturity$BIN) <- 1:length(hake_lbin[-1])
-# 
-# maturity$AgeBIN <- cut(maturity$Age, breaks = hake_age_bin)
-# levels(maturity$AgeBIN) <- hake_ages
-# 
-# hake <- maturity[-which(is.na(maturity$AgeBIN)),]
-# hake_table <- with(hake,table(BIN,AgeBIN))
-# alk_hake <- prop.table(hake_table, margin=1)
-# alk_hake[is.na(alk_hake)] <- 0
-# 
 # # Predator age calculations
 # pred_ages <- alkIndivAge(key = alk_hake, 
 #                          formula = age ~ length, 

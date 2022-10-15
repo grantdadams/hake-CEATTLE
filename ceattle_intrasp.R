@@ -12,15 +12,7 @@ source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
 theme_set(theme_sleek_transparent())
 
 # Read in CEATTLE data from the excel file
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_221011.xlsx")
-
-intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
-                                 inits = NULL, # Initial parameters = 0
-                                 file = NULL, # Don't save
-                                 # debug = 1, # 1 = estimate, 0 = don't estimate
-                                 random_rec = FALSE, # No random recruitment
-                                 msmMode = 1, # Multi-species mode
-                                 phase = "default")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_221014.xlsx")
 
 hake_nodiet <- hake_intrasp
 hake_nodiet$est_M1 <- 0  # Use base M1
@@ -31,6 +23,17 @@ nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
                                 random_rec = FALSE, # No random recruitment
                                 msmMode = 0, # Single-species mode - no predation mortality
                                 phase = "default")
+
+plot_biomass(nodiet_run, add_ci = TRUE)
+
+intrasp_run <- Rceattle::fit_mod(data_list = hake_intrasp,
+                                 inits = NULL, # Initial parameters = 0
+                                 file = NULL, # Don't save
+                                 # debug = 1, # 1 = estimate, 0 = don't estimate
+                                 random_rec = FALSE, # No random recruitment
+                                 msmMode = 1, # Multi-species mode
+                                 phase = "default")
+
 
 # # Rceattle diagnostics ------------------------------------------------------
 # plot_biomass(intrasp_run, add_ci = TRUE)
@@ -44,11 +47,6 @@ nodiet_run <- Rceattle::fit_mod(data_list = hake_intrasp,
 # plot_comp(intrasp_run)
 # plot_srv_comp(intrasp_run)
 
-# # Get SD of quantity
-sd_temp <- which(names(Rceattle[[i]]$sdrep$value) == "biomass")
-sd_temp <- which(names(Rceattle[[i]]$sdrep$value) == "biomassSSB")
-sd_temp <- which(names(Rceattle[[i]]$sdrep$value) == "R")
-
 ### Plot biomass & recruitment in comparison to no diet & assessment ----------
 years <- 1988:2019
 # Pull out SSB & overall biomass from CEATTLE runs
@@ -57,7 +55,6 @@ ceattle_biomass <- function(run, name) {
   # name <- "CEATTLE - cannibalism"
   ssb <- (c(run$quantities$biomassSSB) * 2)
   biom <- c(run$quantities$biomass)
-  biom_sd <- run$sdrep$sd[which(names(run$sdrep$value) == "biomass")]
   wide <- as.data.frame(cbind(years, ssb, biom))
   colnames(wide) <- c("year", "SSB", "Total Biomass")
   all_biom <- melt(wide, id.vars = "year")
@@ -102,8 +99,8 @@ plot_popdy <- function() {
                                variable = rep("Stock Synthesis", (length(1989:2019))), 
                                value = ss3_R[1:length(1989:2019), 2],
                                error = ss3_R[1:length(1989:2019), 3]))
-  R_all <- rbind(cbind(R, error = c(intrasp_run$sdrep$sd[which(names(run$sdrep$value) == "R")], 
-                                    nodiet_run$sdrep$sd[which(names(run$sdrep$value) == "R")])), 
+  R_all <- rbind(cbind(R, error = c(intrasp_run$sdrep$sd[which(names(intrasp_run$sdrep$value) == "R")], 
+                                    nodiet_run$sdrep$sd[which(names(nodiet_run$sdrep$value) == "R")])), 
                  ss3_1)
   R_all$value <- as.numeric(R_all$value)
   R_all$year <- as.numeric(R_all$year)
