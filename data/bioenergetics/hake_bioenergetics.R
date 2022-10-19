@@ -4,10 +4,11 @@
 
 library(reshape2)
 library(ggplot2)
-library(viridis)
+library(jcolors)
 # Set transparent ggplot theme
-source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
+source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent_dark.R")
 theme_set(theme_sleek_transparent())
+halloween <- c("darkorchid3", "darkorange", "chartreuse3", "deepskyblue3")
 
 proxy_params <- read.csv("data/bioenergetics/proxy_bioen_params.csv")
 
@@ -57,7 +58,7 @@ temp_rate <- ggplot(spp_temp, aes(x=temp, y=value)) +
   # Following lines for distinguishing between lit & estimated hake values
   # geom_line(aes(color=variable, linetype=ref), size=1) +
   # scale_linetype_manual(values=c("longdash", "solid"), guide="none") +  
-  scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) +  
+  scale_color_manual(values = halloween) +  
   ylab("specific rate") +
   labs(color = "species")
 temp_rate
@@ -100,7 +101,7 @@ mass_rate <- ggplot(spp_mass, aes(x=weight, y=value)) +
   # Following lines for distinguishing between lit & estimated hake values
   # geom_line(aes(color=variable, linetype=ref), size=1) +
   # scale_linetype_manual(values=c("longdash", "solid"), guide="none") +
-  scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) + 
+  scale_color_manual(values = halloween) + 
   ylab("specific rate") +
   labs(color = "species")
 mass_rate
@@ -147,7 +148,7 @@ temp_sen <- cbind(temp_sen, anomaly = rep(anomalies, times=3))
 temp_sensitivity <- ggplot(temp_sen, aes(x=anomaly, y=value)) +
   geom_point(aes(color=variable), size=2) +
   geom_line(aes(color=variable), size=1) +
-  scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) + 
+  scale_color_manual(values = halloween) + 
   ylab("specific rate") +
   xlab("temperature anomaly") +
   labs(color = "species")
