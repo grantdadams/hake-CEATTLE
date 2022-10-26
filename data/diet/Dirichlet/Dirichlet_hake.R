@@ -12,6 +12,7 @@ halloween <- c("darkorchid3", "darkorange", "chartreuse3", "deepskyblue3")
 
 ### Update data, run Dirichlet ------------------------------------------------
 run_Dirichlet <- function(data, name) {
+  ### Organize data -----------------------------------------------------------
   # Get total stomach weights for each predator and proportional weight for prey hake
   aged_wt <- data[, c("Predator_ID", "year", "predator_age", "prey_name", "prey_age", "prey_wt")] %>%
     group_by(Predator_ID) %>%
@@ -444,7 +445,7 @@ run_Dirichlet <- function(data, name) {
   
   # Fix issues from export from the Dirichlet script
   colnames(post_dirichlet) <- c("predator", "prey", "lower95", "upper95", "mode", 
-                                "simple_average", "boot_average", "boot_mode",
+                                "simple average", "bootstrapped average", "boot_mode",
                                 "normalized_mode")
   post_dirichlet <- post_dirichlet[-1, ]
   
@@ -459,15 +460,16 @@ run_Dirichlet <- function(data, name) {
   scaleFUN <- function(x) sprintf("%.2f", x)  # set scaling function for y-axis
   
   # Restrict plots to only the hake prey items
-  post_dirichlet_hake <- post_dirichlet_long %>% filter(prey != "other")
+  post_dirichlet_hake <- post_dirichlet_long %>% 
+    filter(prey != "other") %>%
+    filter(variable == "simple average" | variable == "bootstrapped average")
   dirichlet_results <- ggplot(post_dirichlet_hake, aes(x = prey)) +
-    geom_errorbar(aes(ymin = lower95, ymax = upper95), 
-                  width = .3, position = position_dodge(.9)) +
-    geom_point(aes(x = prey, y = value, color = variable, shape = variable), size = 7, alpha = 0.5) +
-    scale_color_viridis(discrete = TRUE, option = "magma", begin = 0.3) +
-    xlab("prey item") + ylab("stomach proportion") +
+    geom_errorbar(aes(ymin = lower95, ymax = upper95), width = .3, position = position_dodge(.9), color = "white") +
+    geom_point(aes(x = prey, y = value, color = variable, shape = variable), size = 4, alpha = 0.7) +
+    scale_color_manual(values = halloween) + 
+    xlab("prey age") + ylab("stomach proportion") +
     scale_y_continuous(labels = scaleFUN) + 
-    facet_wrap(~ predator, ncol = 6)
+    facet_wrap(~ predator, ncol = 3)
   
   # Compare simple and bootstrapped average
   post_dirichlet_hake2 <- post_dirichlet_hake %>% filter(variable %in% c("simple_average", "boot_average"))
@@ -493,7 +495,7 @@ all_years_df <- all_years[[1]]
 
 all_years[[2]]
 ggsave(filename = "plots/diet/Dirichlet/Dirichlet_all_years.png", all_years[[2]], 
-       bg = "transparent", width=200, height=100, units="mm", dpi=300)
+       bg = "transparent", width=150, height=180, units="mm", dpi=300)
 
 all_years[[3]]
 
