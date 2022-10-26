@@ -133,7 +133,7 @@ timing_yearly <- ggplot(timing_all, aes(x = as.factor(month), y = n, fill = prey
 timing_yearly
 
 ggsave(filename = "plots/diet/yearly_timing.png", timing_yearly, 
-       bg = "transparent", width=200, height=140, units="mm", dpi=300)
+       bg = "transparent", width=250, height=140, units="mm", dpi=300)
 
 timing_overall <- ggplot(timing_all, aes(x = as.factor(month), y = n, color = prey_name, fill = prey_name)) +
   geom_bar(position = "stack", stat = "identity") +

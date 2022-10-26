@@ -598,8 +598,8 @@ comp2_plot <- ggplot(comp2, aes(x=pred_age, y=prop, fill=factor(prey_age))) +
   scale_fill_viridis(discrete = TRUE, option = "magma", begin = 0.3) +
   xlab("predator hake age") + ylab("diet proportion") +
   labs(fill = "prey hake age") +
-  facet_wrap(~ data)
+  facet_wrap(~ data, ncol = 1)
 comp2_plot
 
 ggsave(filename = "plots/diet/Dirichlet/Dirichlet_comp_pretty.png", comp2_plot, 
-       bg = "transparent", width=160, height=50, units="mm", dpi=300)
+       bg = "transparent", width=100, height=120, units="mm", dpi=300)
