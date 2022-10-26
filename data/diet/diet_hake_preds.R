@@ -3,7 +3,7 @@
 library(dplyr)
 library(ggplot2)
 # Set transparent ggplot theme
-source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
+source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent_dark.R")
 theme_set(theme_sleek_transparent())
 
 path <- "data/diet/CCTD/v4/"
@@ -24,7 +24,7 @@ high_n <- pred_prey %>%
 
 # Plot highest predators
 hake_pred_plot <- ggplot(high_n, aes(x = reorder(Predator_Com_Name, freq), y = freq)) +
-  geom_bar(position = "dodge", stat = "identity", show.legend = FALSE, fill = "#482577") +
+  geom_bar(position = "dodge", stat = "identity", show.legend = FALSE, fill = "darkorchid3") +
   coord_flip() +
   scale_y_continuous(labels = scales::label_number(accuracy = 0.01)) +
   xlab(" ") + ylab("Relative frequency of hake predation") 

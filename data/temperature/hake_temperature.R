@@ -7,8 +7,9 @@ library(dplyr)
 library(ggplot2)
 library(viridis)
 # Set transparent ggplot theme
-source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
+source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent_dark.R")
 theme_set(theme_sleek_transparent())
+halloween <- c("darkorchid3", "darkorange", "chartreuse3", "deepskyblue3")
 
 survey_temp <- read.csv("data/temperature/temp_100_sophia.csv")[, -c(2:4)]
 summer_ROMS <- read.csv("data/temperature/ROMS_summer_mean.csv")
@@ -38,7 +39,7 @@ CEATTLE_temp <- CEATTLE_temp[order(CEATTLE_temp$year), ]
 mean_temp_plot <- ggplot(CEATTLE_temp, aes(x=year, y=mean_temp, color=source)) +
   geom_line(linetype="dotted") +
   geom_point() +
-  scale_color_viridis(discrete = TRUE, direction=-1, begin=0.1, end=0.9) +  # invert colors
+  scale_color_manual(values = halloween) +  
   ylab("temperature")
 mean_temp_plot
 
@@ -85,7 +86,7 @@ temp_comp$temp <- as.numeric(temp_comp$temp)
   
 temp_hake_hist <- ggplot(temp_comp, aes(x=temp, fill=source)) +
   geom_histogram() +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  scale_color_manual(values = halloween) +  
   xlab("temperature (°C)") + ylab(" ") 
 temp_hake_hist
 
@@ -113,7 +114,7 @@ colnames(means)[3] <- "dataset"
 mean_temp_compared <- ggplot(means, aes(x=year, y=mean_temp)) +
   geom_point(aes(color=dataset), size=2) +
   geom_line(aes(color=dataset), size=1, alpha = 0.3) +
-  scale_color_viridis(discrete = TRUE, begin=0.1, end=0.9) +   
+  scale_color_manual(values = halloween) +   
   ylab("mean temperature")
 mean_temp_compared
 

@@ -8,7 +8,7 @@ library(dplyr)
 library(ggplot2)
 library(viridis)
 # Set transparent ggplot theme
-source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
+source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent_dark.R")
 theme_set(theme_sleek_transparent())
 
 # Read in CEATTLE data from the excel file
@@ -121,8 +121,8 @@ plot_popdy <- function() {
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value, color = model, fill = model)) +
     geom_line() +
     geom_ribbon(aes(ymin=(value-(2*error)), ymax=(value+(2*error))), alpha = 0.2, color = NA) + 
-    scale_color_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) +  
-    scale_fill_viridis(discrete = TRUE, direction = -1, begin = 0.1, end = 0.9) + 
+    scale_color_viridis(discrete = TRUE, option = "magma", begin = 0.3) +
+    scale_fill_viridis(discrete = TRUE, option = "magma", begin = 0.3) + 
     ylab(" ") +
     labs(color = "model") +
     facet_wrap(~type, ncol = 1, scales = "free_y")
@@ -134,7 +134,7 @@ popdy_plot <- plot_popdy()
 popdy_plot
 
 ggsave(filename="plots/CEATTLE/intraspecies predation/intrasp_popdy.png", popdy_plot, 
-       bg = "white", width=170, height=140, units="mm", dpi=300)
+       bg = "transparent", width=170, height=140, units="mm", dpi=300)
 
 
 ### Numbers-at-age for each model run -----------------------------------------
@@ -389,9 +389,9 @@ plot_mortality_custom <- function(Rceattle, file = NULL, incl_proj = FALSE, zlim
             scaleFUN <- function(x) sprintf("%.2f", x)  # set scaling function for legend
             
             if(log){
-              p = p + scale_fill_viridis_c("log(M1 + M2)", limits = c(zlim[1], zlim[2]), labels = scaleFUN)
+              p = p + scale_fill_viridis("log(M1 + M2)", option = "magma", begin = 0.3, labels = scaleFUN)
             } else {
-              p = p + scale_fill_viridis_c("M1 + M2", limits = c(zlim[1], zlim[2]), labels = scaleFUN)
+              p = p + scale_fill_viridis("M1 + M2", option = "magma", begin = 0.3, labels = scaleFUN)
             }
             return(p)
           }

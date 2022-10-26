@@ -6,8 +6,9 @@ library(reshape2)
 library(ggplot2)
 library(viridis)
 # Set transparent ggplot theme
-source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
+source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent_dark.R")
 theme_set(theme_sleek_transparent())
+halloween <- c("darkorchid3", "darkorange", "chartreuse3", "deepskyblue3")
 
 ### Update data, run Dirichlet ------------------------------------------------
 run_Dirichlet <- function(data, name) {
@@ -463,16 +464,16 @@ run_Dirichlet <- function(data, name) {
     geom_errorbar(aes(ymin = lower95, ymax = upper95), 
                   width = .3, position = position_dodge(.9)) +
     geom_point(aes(x = prey, y = value, color = variable, shape = variable), size = 7, alpha = 0.5) +
-    scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+    scale_color_viridis(discrete = TRUE, option = "magma", begin = 0.3) +
     xlab("prey item") + ylab("stomach proportion") +
     scale_y_continuous(labels = scaleFUN) + 
-    facet_wrap(~ predator, ncol = 3)
+    facet_wrap(~ predator, ncol = 6)
   
   # Compare simple and bootstrapped average
   post_dirichlet_hake2 <- post_dirichlet_hake %>% filter(variable %in% c("simple_average", "boot_average"))
   comparison_plot <- ggplot(post_dirichlet_hake2, aes(x=predator, y=value, fill=factor(prey))) +
     geom_bar(stat = "identity", position = "stack") +
-    scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+    scale_fill_viridis(discrete = TRUE, option = "magma", begin = 0.3) +
     scale_y_continuous(labels = scaleFUN) + 
     facet_wrap(~ variable)
   comparison_plot
@@ -492,7 +493,7 @@ all_years_df <- all_years[[1]]
 
 all_years[[2]]
 ggsave(filename = "plots/diet/Dirichlet/Dirichlet_all_years.png", all_years[[2]], 
-       bg = "transparent", width=160, height=180, units="mm", dpi=300)
+       bg = "transparent", width=200, height=100, units="mm", dpi=300)
 
 all_years[[3]]
 
@@ -568,7 +569,7 @@ comparison_plot <- ggplot(comparison, aes(x=pred_age, y=prop, fill=factor(prey_a
   geom_bar(stat = "identity", position = "stack") +
   scale_x_discrete(limits = factor(1:20)) +  # add in missing predator ages
   scale_y_continuous(limits = c(0, 1), labels = scales::label_number(accuracy = NULL)) +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  scale_fill_viridis(discrete = TRUE, option = "magma", begin = 0.3) +
   xlab("predator hake age") + ylab("diet proportion by weight") +
   labs(fill = "prey hake age") +
   facet_wrap(~ data)
@@ -594,7 +595,7 @@ comp2_plot <- ggplot(comp2, aes(x=pred_age, y=prop, fill=factor(prey_age))) +
   geom_bar(stat = "identity", position = "stack") +
   scale_x_discrete(limits = factor(1:20), breaks = c(1, 5, 10, 15, 20)) +  # add in missing predator ages
   scale_y_continuous(limits = c(0, 1), labels = scales::label_number(accuracy = NULL)) +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  scale_fill_viridis(discrete = TRUE, option = "magma", begin = 0.3) +
   xlab("predator hake age") + ylab("diet proportion") +
   labs(fill = "prey hake age") +
   facet_wrap(~ data)

@@ -9,8 +9,9 @@ library(sf)
 library(rnaturalearthdata)
 library(rgeos)
 library(purrr)
-source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
+source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent_dark.R")
 theme_set(theme_sleek_transparent())
+halloween <- c("darkorchid3", "darkorange", "chartreuse3", "deepskyblue3")
 
 ### Read in & update CCTD data from SWFSC -------------------------------------
 CCTD_pred <- read.csv("data/diet/CCTD/hake_aged_pred.csv")
@@ -56,7 +57,7 @@ FEAT_sampling <- FEAT_all %>%
   summarize(n = n()) %>%
   ggplot(aes(x = year, y = n, fill = prey_name)) +
   geom_bar(position = "stack", stat = "identity") +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  scale_fill_manual(values = halloween) +  
   labs(fill = "prey species (n)") + ylab(" ")
 FEAT_sampling
 
@@ -109,7 +110,7 @@ predation_all <- all_data %>%
 
 predation_yearly <- ggplot(predation_all, aes(x = year, y = n, fill = prey_name)) +
   geom_bar(position = "stack", stat = "identity") +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  scale_fill_manual(values = halloween) +  
   labs(fill = "prey species (n)") + ylab(" ")
 predation_yearly
 
@@ -126,7 +127,7 @@ timing_all$month <- factor(timing_all$month)
 timing_yearly <- ggplot(timing_all, aes(x = as.factor(month), y = n, fill = prey_name)) +
   geom_bar(position = "stack", stat = "identity") +
   scale_x_discrete(limits = factor(1:12), breaks = c(2, 4, 6, 8, 10, 12)) +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  scale_fill_manual(values = halloween) +  
   xlab("sampling month") + ylab(" ") +
   facet_wrap(~ year, ncol = 5)
 timing_yearly
@@ -137,8 +138,8 @@ ggsave(filename = "plots/diet/yearly_timing.png", timing_yearly,
 timing_overall <- ggplot(timing_all, aes(x = as.factor(month), y = n, color = prey_name, fill = prey_name)) +
   geom_bar(position = "stack", stat = "identity") +
   scale_x_discrete(limits=factor(1:12)) +
-  scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  scale_color_manual(values = halloween) +  
+  scale_fill_manual(values = halloween) +  
   xlab("sampling month") + ylab(" ") + 
   labs(fill = "prey species (n)", color = "prey species (n)")
 timing_overall
@@ -161,9 +162,9 @@ location_yearly <- ggplot(data = world) +
   coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) +  
   scale_x_continuous(breaks = seq(-135, -120, by = 10)) +
   scale_y_continuous(breaks = seq(35, 55, by = 10)) +
-  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  scale_color_manual(values = halloween) +  
   xlab(" ") + ylab(" ") +
-  facet_wrap(~year, ncol = 5)
+  facet_wrap(~year, ncol = 10)
 
 location_overall <- ggplot(data = world) +
   geom_sf() +
@@ -171,7 +172,7 @@ location_overall <- ggplot(data = world) +
   coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) +
   scale_x_continuous(breaks = seq(-135, -115, by = 5)) +
   scale_y_continuous(breaks = seq(35, 55, by = 5)) +
-  scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+  scale_color_manual(values = halloween) +  
   xlab(" ") + ylab(" ") + labs(color = "prey species")
 location_overall
 
@@ -185,7 +186,7 @@ get_inset <- function(df) {
   plot <- ggplot(df, aes(x = as.factor(month), y = n, fill = prey_name)) +
     geom_bar(position = "stack", stat = "identity") +
     scale_x_discrete(limits = factor(1:12), breaks = c(1, 12)) +
-    scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+    scale_fill_manual(values = halloween) +  
     theme(axis.title.y = element_blank(),
           axis.title.x = element_blank(),
           axis.text.y = element_blank(),
@@ -224,4 +225,4 @@ location_timing <- location_yearly +
 location_timing
 
 ggsave(filename = "plots/diet/locations_timing.png", location_timing, 
-       bg = "transparent", width=200, height=200, units="mm", dpi=300)
+       bg = "transparent", width=300, height=180, units="mm", dpi=300)

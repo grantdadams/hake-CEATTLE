@@ -8,8 +8,9 @@ library(sf)
 library(rnaturalearthdata)
 library(rgeos)
 # Set transparent ggplot theme
-source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent.R")
+source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent_dark.R")
 theme_set(theme_sleek_transparent())
+halloween <- c("darkorchid3", "darkorange", "chartreuse3", "deepskyblue3")
 
 path <- "data/diet/CCTD/v4/"
 
@@ -114,7 +115,7 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
                                       fill = ifelse(Prey_Com_Name == prey_species, "highlighted", "normal"))) +
     geom_bar(position = "dodge", stat = "identity", show.legend = FALSE) +
     coord_flip() +
-    scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9, direction = -1) +
+    scale_fill_manual(values = halloween) +  
     xlab(" ") + ylab(" ") +
     facet_wrap(~ variable, scales = "free")
   
@@ -130,7 +131,7 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
   
   predation_yearly <- ggplot(predation_all, aes(x = Year, y = n, fill = type)) +
     geom_bar(position = "stack", stat = "identity") +
-    scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+    scale_fill_manual(values = halloween) +  
     ylab(" ")
   
   ### Plot timing of sample collection ----------------------------------------
@@ -142,15 +143,15 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
   timing_yearly <- ggplot(timing_all, aes(x = as.factor(Month), y = n, fill = type)) +
     geom_bar(position = "stack", stat = "identity") +
     scale_x_discrete(limits=factor(1:12)) +
-    scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+    scale_fill_manual(values = halloween) +  
     xlab("sampling month") + ylab(" ") +
     facet_wrap(~ Year)
   
   timing_overall <- ggplot(timing_all, aes(x = as.factor(Month), y = n, color = type, fill = type)) +
     geom_bar(position = "stack", stat = "identity") +
     scale_x_discrete(limits=factor(1:12)) +
-    scale_fill_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
-    scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+    scale_fill_manual(values = halloween) +  
+    scale_color_manual(values = halloween) +  
     xlab("sampling month") + ylab(" ") 
   
   ### Plot location of sample collection --------------------------------------
@@ -170,7 +171,7 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
     coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) +  
     scale_x_continuous(breaks = seq(-135, -120, by = 10)) +
     scale_y_continuous(breaks = seq(35, 55, by = 10)) +
-    scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+    scale_color_manual(values = halloween) +  
     xlab(" ") + ylab(" ") +
     facet_wrap(~Year, ncol = 8)
   
@@ -180,7 +181,7 @@ combine_diet <- function(type, pred_species, prey_species, label_specific) {
     coord_sf(xlim = c(-135, -115), ylim = c(31, 56), expand = FALSE) +
     scale_x_continuous(breaks = seq(-135, -115, by = 5)) +
     scale_y_continuous(breaks = seq(35, 55, by = 5)) +
-    scale_color_viridis(discrete = TRUE, begin = 0.1, end = 0.9) +
+    scale_color_manual(values = halloween) +  
     xlab(" ") + ylab(" ") 
   
   ### Inset timing plots in yearly location plots -----------------------------
@@ -284,6 +285,8 @@ sealion_hake[[7]]  # overall locations of predation by type
 
 ggsave(filename = "plots/diet/Non-hake/CSL_prey_species.png", sealion_hake[[5]], 
        bg = "transparent", width=200, height=80, units="mm", dpi=300)
+ggsave(filename = "plots/diet/Non-hake/CSL_hake_yearly.png", sealion_hake[[6]], 
+       bg = "transparent", width=200, height=100, units="mm", dpi=300)
 ggsave(filename = "plots/diet/Non-hake/CSL_locations_overall.png", sealion_hake[[7]], 
        bg = "transparent", width=100, height=100, units="mm", dpi=300)
 
