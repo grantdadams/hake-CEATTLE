@@ -46,11 +46,11 @@ FEAT_all <- FEAT_all %>%
   select(stomach_uuid, month, year, tow_latitude, tow_longitude, predator_age, 
          prey_name, content_wt_g, measure_value)
 
-# Switch to age 20 accumulator age
+# Switch to age 15 accumulator age
 FEAT_all <- FEAT_all %>% 
   filter(predator_age != "(blank)") %>%
   mutate(predator_age = as.numeric(predator_age)) %>%
-  mutate(predator_age = ifelse(predator_age > 20, 20, predator_age))
+  mutate(predator_age = ifelse(predator_age > 15, 15, predator_age))
 
 FEAT_sampling <- FEAT_all %>%
   group_by(year, prey_name) %>%
@@ -58,11 +58,11 @@ FEAT_sampling <- FEAT_all %>%
   ggplot(aes(x = year, y = n, fill = prey_name)) +
   geom_bar(position = "stack", stat = "identity") +
   scale_fill_manual(values = halloween) +  
-  labs(fill = "prey species (n)") + ylab(" ")
+  labs(fill = "prey species") + ylab("frequency of occurrence")
 FEAT_sampling
 
 ggsave(filename = "plots/diet/FEAT_sampling.png", FEAT_sampling, 
-       bg = "transparent", width=200, height=120, units="mm", dpi=300)
+       bg = "transparent", width=210, height=120, units="mm", dpi=300)
 
 
 ### Combine datasets ----------------------------------------------------------
@@ -111,11 +111,11 @@ predation_all <- all_data %>%
 predation_yearly <- ggplot(predation_all, aes(x = year, y = n, fill = prey_name)) +
   geom_bar(position = "stack", stat = "identity") +
   scale_fill_manual(values = halloween) +  
-  labs(fill = "prey species (n)") + ylab(" ")
+  labs(fill = "prey species") + ylab("frequency of occurrence")
 predation_yearly
 
 ggsave(filename = "plots/diet/hake_cannibalism.png", predation_yearly, 
-       bg = "transparent", width=170, height=100, units="mm", dpi=300)
+       bg = "transparent", width=190, height=100, units="mm", dpi=300)
 
 ### Plot timing of sample collection ----------------------------------------
 timing_all <- all_data %>%
