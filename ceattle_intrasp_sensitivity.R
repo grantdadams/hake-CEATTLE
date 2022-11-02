@@ -39,15 +39,15 @@ prop <- as.data.frame(cbind(wts, wt05 = wt05, wt10 = wt10, wt50 = wt50, wt75 = w
 colnames(prop)[3] <- c("empirical data")
 prop_all <- melt(prop, id.vars = c("Pred_age", "Prey_age"))
 
-stomach_props <- ggplot(prop_all, aes(x=Pred_age, y=value, fill=variable)) +
+stomach_props <- ggplot(prop_all, aes(x=Prey_age, y=value, fill=variable)) +
   geom_bar(stat = "identity", position = "dodge") +
   scale_fill_viridis(discrete = TRUE, option = "magma", begin = 0.3, direction = -1) +
-  ylab("stomach proportion") + xlab("predator age") +
-  facet_wrap(~Prey_age)
+  ylab("stomach proportion") + xlab("prey age") +
+  facet_wrap(~Pred_age, ncol = 5)
 stomach_props
 
 ggsave(filename = "plots/CEATTLE/intraspecies predation/Testing/sensitivity_prop.png", stomach_props,
-       bg = "transparent", width=200, height=100, units="mm", dpi=300)
+       bg = "transparent", width=220, height=100, units="mm", dpi=300)
 
 
 # Adapt weight proportions to replace those in the excel file & run CEATTLE

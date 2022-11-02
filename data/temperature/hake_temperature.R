@@ -111,9 +111,12 @@ means <- cbind(means, c(rep("summer ROMS", 41),
                         rep("kriged, biomass weighted", 12)))
 colnames(means)[3] <- "dataset"
 
-mean_temp_compared <- ggplot(means, aes(x=year, y=mean_temp)) +
+means_subset <- means %>% filter(year >= 1988)
+
+mean_temp_compared <- ggplot(means_subset, aes(x=year, y=mean_temp)) +
   geom_point(aes(color=dataset), size=2) +
   geom_line(aes(color=dataset), size=1, alpha = 0.3) +
+  ylim(0, 8.6) +
   scale_color_manual(values = halloween) +   
   ylab("mean temperature")
 mean_temp_compared

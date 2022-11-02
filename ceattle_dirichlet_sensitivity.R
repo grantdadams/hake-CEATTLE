@@ -10,6 +10,7 @@ library(viridis)
 # Set transparent ggplot theme
 source("~/Desktop/Local/ggsidekick/R/theme_sleek_transparent_dark.R")
 theme_set(theme_sleek_transparent())
+halloween <- c("darkorchid3", "darkorange", "chartreuse3", "deepskyblue3")
 
 hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_221026.xlsx")
 
@@ -88,12 +89,12 @@ popdy <- rbind(ceattle_popdy(run_all, "all years", 1988:2019),
 popdy$year <- as.numeric(popdy$year)
 popdy$value <- as.numeric(popdy$value)
 popdy$model <- factor(popdy$model,
-                      levels = c("all years", "single-species", "1988-1999", "2005-2019"))
+                      levels = c("single-species", "all years", "1988-1999", "2005-2019"))
 
 popdy_plot <- ggplot(popdy, aes(x=year, y=value, color = model, fill = model)) +
   geom_line() +
-  scale_color_viridis(discrete = TRUE, option = "magma", begin = 0.3) +
-  scale_fill_viridis(discrete = TRUE, option = "magma", begin = 0.3) + 
+  scale_color_manual(values = halloween) +  
+  scale_fill_manual(values = halloween) +   
   ylab(" ") +
   labs(color = "model") +
   facet_wrap(~type, ncol = 2, scales = "free_y")
