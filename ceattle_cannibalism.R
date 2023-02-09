@@ -163,7 +163,7 @@ plot_popdy <- function() {
   all_popdy$value <- as.numeric(all_popdy$value)
   all_popdy$error <- as.numeric(all_popdy$error)
   all_popdy$model <- factor(all_popdy$model, levels = c("Assessment", "CEATTLE - single-species", "CEATTLE - cannibalism"))
-  all_popdy$type <- factor(all_popdy$type, labels = c("SSB (Mt)", "Total Biomass (Mt)", "Recruitment (millions)"))
+  all_popdy$type <- factor(all_popdy$type, labels = c("SSB (Mt)", "Total Biomass (Mt)", "age-1 Recruits (millions)"))
   
   # Add bounds for error & set 0 as minimum for plotting
   all_popdy$min <- all_popdy$value - (2 * all_popdy$error)

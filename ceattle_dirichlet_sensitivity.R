@@ -141,7 +141,7 @@ timing_plot_popdy <- function() {
                         mean_SEM("2005-2019", "all years", "Recruitment", 2005:2019))
   
   # Plot population dynamics
-  all_popdy$variable <- factor(all_popdy$variable, labels = c("SSB (Mt)", "Total Biomass (Mt)", "Recruitment (millions)"))
+  all_popdy$variable <- factor(all_popdy$variable, labels = c("SSB (Mt)", "Total Biomass (Mt)", "age-1 Recruits (millions)"))
   
   # Add bounds for error & set 0 as minimum for plotting
   all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
