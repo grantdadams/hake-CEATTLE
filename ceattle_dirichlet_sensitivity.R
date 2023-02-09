@@ -157,8 +157,7 @@ timing_plot_popdy <- function() {
     ylim(0, NA) +
     ylab(" ") +
     labs(color = "model") +
-    facet_wrap(~variable, ncol = 1, scales = "free_y", strip.position = "left") +
-    theme(strip.background = element_blank(), strip.placement = "outside")
+    facet_wrap(~variable, ncol = 2, scales = "free_y") 
   
   # Plot ratio of SSB:Biomass to look for skewness in age composition
   ratio <- function(run, name, years) {
@@ -188,12 +187,12 @@ mean_SEM <- timing_popdy[[2]]
 
 timing_popdy[[3]]
 
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/dirichlet_popdy.png", timing_popdy[[3]], 
-       width=140, height=150, units="mm", dpi=300)
+ggsave(filename="plots/presentations/dirichlet_popdy.png", timing_popdy[[3]], 
+       width=200, height=100, units="mm", dpi=300)
 
 timing_popdy[[4]]
-ggsave(filename="plots/CEATTLE/cannibalism/Testing/dirichlet_ratio.png", timing_popdy[[4]], 
-       width=150, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/Testing/dirichlet_ratio.png", timing_popdy[[4]], 
+#        width=150, height=80, units="mm", dpi=300)
 
 # Calculate reference points 
 DynamicB0_recent <- c(run_recent$quantities$DynamicB0[1:length(2005:2019)])
