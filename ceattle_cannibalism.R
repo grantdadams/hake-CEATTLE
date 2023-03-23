@@ -13,7 +13,7 @@ library(ggsidekick)
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230217.xlsx")
+hake_intrasp <- Rceattle::read_data(file = "data/hake_intrasp_230314.xlsx")
 
 # Run and fit the CEATTLE model -----------------------------------------------
 run_CEATTLE <- function(data, M1, init, msm) {
@@ -101,8 +101,8 @@ colnames(nodiet_summary) <- c("est M1", "fix M1", "age M1")
 
 
 ### Plot multi-species vs. single-species vs. assessment ----------------------
-start_yr <- 1988
-end_yr <- 2022
+start_yr <- intrasp[[1]]$data_list$styr
+end_yr <- 2025
 years <- start_yr:end_yr
 
 # Helper function for extracting -by-age data from CEATTLE
@@ -120,10 +120,11 @@ extract_byage <- function(result, name, type) {
   return(df)
 }
 
-plot_models <- function(ms_run, ss_run, assess_yr = "2020", hind_end = 2019, save_data = FALSE) {
+plot_models <- function(ms_run, ss_run, assess_yr = "2022", hind_end = 2021, save_data = FALSE) {
+  
   # Plot biomass & recruitment in comparison to no diet & assessment ----------
   ceattle_biomass <- function(run, name) {
-    ssb <- (c(run$quantities$biomassSSB) * 2)
+    ssb <- (c(run$quantities$biomassSSB))
     biom <- c(run$quantities$biomass)
     biom_sd <- run$sdrep$sd[which(names(run$sdrep$value) == "biomass")]
     wide <- as.data.frame(cbind(years, ssb, biom))
@@ -459,6 +460,10 @@ plots[[8]]
 plots[[9]]
 # plots[[10]]
 
+# Plot with fixed M1
+plots_M1fixed <- plot_models(intrasp_M1fixed[[1]], nodiet_M1fixed[[1]])
+plots_M1fixed[[2]]
+
 ### Compare and plot natural mortality (M1 + M2) ------------------------------
 mortality <- function(run, type) {
   M1 <- run$quantities$M1[1, 1, 1:15]
@@ -555,12 +560,13 @@ intrasp_Fspr$quantities$Ftarget
 
 
 ### Save plots (when not experimenting) ---------------------------------------
-# ggsave(filename="plots/CEATTLE/cannibalism/popdyn.png", plots[[2]], width=140, height=150, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/biomass_ratio.png", plots[[3]], width=150, height=80, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/nbyage.png", plots[[4]], width=160, height=120, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/survey_biomass.png", plots[[5]], width=200, height=120, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/suitability.png", plots[[6]], width=150, height=80, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/biomass_byage.png", plots[[7]], width=160, height=80, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/biomass_consumed.png", plots[[8]], width=140, height=80, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/realized_consumption.png", plots[[9]], width=140, height=80, units="mm", dpi=300)
-# ggsave(filename="plots/CEATTLE/cannibalism/M.png", intrasp_mort[[1]], width = 160, height = 70, units = "mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/2022/popdyn.png", plots[[2]], width=140, height=150, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/2022/biomass_ratio.png", plots[[3]], width=150, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/2022/nbyage.png", plots[[4]], width=160, height=120, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/2022/survey_biomass.png", plots[[5]], width=200, height=120, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/2022/suitability.png", plots[[6]], width=150, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/2022/biomass_byage.png", plots[[7]], width=160, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/2022/biomass_consumed.png", plots[[8]], width=140, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/2022/realized_consumption.png", plots[[9]], width=140, height=80, units="mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/2022/M.png", intrasp_mort[[1]], width = 160, height = 70, units = "mm", dpi=300)
+# ggsave(filename="plots/CEATTLE/cannibalism/2022/popdyn_M1fixed.png", plots_M1fixed[[2]], width=140, height=150, units="mm", dpi=300)
