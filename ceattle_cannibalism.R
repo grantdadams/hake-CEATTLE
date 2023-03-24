@@ -24,9 +24,9 @@ run_CEATTLE <- function(data, M1, init, msm) {
                            file = NULL, # Don't save
                            # debug = 1, # 1 = estimate, 0 = don't estimate
                            msmMode = msm, # Single-species mode - no predation mortality
-                           # proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
-                           estimateMode = 0,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
-                           HCR = build_hcr(0),
+                           proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
+                           # estimateMode = 0,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
+                           # HCR = build_hcr(0),
                            phase = "default")
   
   objective <- run$opt$objective
@@ -41,7 +41,12 @@ run_CEATTLE <- function(data, M1, init, msm) {
   return(list(run, fit, jnll_summary))
 }
 
+# Single-species model with estimated M1
+nodiet <- run_CEATTLE(data = hake_intrasp, M1 = 1, init = NULL, msm = 0)
+nodiet[[2]]  # check convergence
+
 # Run with cannibalism, estimated M1
+# Use estimated parameters from single-species run to help with convergence
 intrasp <-  run_CEATTLE(data = hake_intrasp, M1 = 1, init = NULL, msm = 1)
 intrasp[[2]]  # check convergence
 
@@ -84,9 +89,7 @@ colnames(intrasp_summary) <- c("est M1", "fix M1", "age M1")
 #                                   msmMode = 1, # Single-species mode - no predation mortality
 #                                   phase = "default")
 
-# No diet (single-species run)
-nodiet <- run_CEATTLE(data = hake_intrasp, M1 = 1, init = NULL, msm = 0)
-nodiet[[2]]  # check convergence
+# Single-species run with fixed & time-varying M1
 nodiet_M1fixed <- run_CEATTLE(data = hake_intrasp, M1 = 0, init = NULL, msm = 0)
 nodiet_M1aged <- run_CEATTLE(data = hake_intrasp, M1 = 3, init = NULL, msm = 0)
 
@@ -438,10 +441,10 @@ plot_models <- function(ms_run, ss_run, assess_yr = "2022", hind_end = 2021, sav
     ylab("biomass of prey / SSB")
   
   if(save_data == TRUE) {
-    write.csv(biomass, "data/ceattle_intrasp_biomass.csv", row.names = FALSE)
-    write.csv(nodiet_biomass, "data/ceattle_nodiet_biomass.csv", row.names = FALSE)
-    write.csv(recruitment, "data/ceattle_intrasp_R.csv", row.names = FALSE)
-    write.csv(nbyage, "data/ceattle_intrasp_nbyage.csv", row.names = FALSE)
+    write.csv(biomass, paste0("data/CEATTLE/", assess_yr, "/ceattle_intrasp_biomass.csv"), row.names = FALSE)
+    write.csv(nodiet_biomass, paste0("data/CEATTLE/", assess_yr, "/ceattle_nodiet_biomass.csv"), row.names = FALSE)
+    write.csv(recruitment, paste0("data/CEATTLE/", assess_yr, "/ceattle_intrasp_R.csv"), row.names = FALSE)
+    write.csv(nbyage, paste0("data/CEATTLE/", assess_yr, "/ceattle_intrasp_nbyage.csv"), row.names = FALSE)
   }
   
   return(list(mean_SEM_all, popdy_plot, ratio_plot, nbyage_plot, 
