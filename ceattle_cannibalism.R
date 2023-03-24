@@ -26,6 +26,7 @@ run_CEATTLE <- function(data, M1, init, msm) {
                            msmMode = msm, # Single-species mode - no predation mortality
                            # proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
                            estimateMode = 0,  # 0 = Fit the hindcast model and projection with HCR specified via HCR
+                           HCR = build_hcr(0),
                            phase = "default")
   
   objective <- run$opt$objective
