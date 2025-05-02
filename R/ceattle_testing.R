@@ -1,6 +1,17 @@
+#' Script for running the CEATTLE model (with important inputs explicitly listed)
+#' for testing the model through running a single- and a multispecies model and
+#' plotting the comparison. This script includes a streamlined version of the 
+#' population dynamics plots included in ceattle_cannibalism.R and the predation
+#' mortality for the multispecies model, as requested by the hake stock 
+#' assessors.
+#' 
+#' Currently, this script is set up for testing the dev_srr branch of Rceattle.
+
+# Set up ----------------------------------------------------------------------
+# Installation options for Rceattle if testing different branches 
 # remove.packages("Rceattle")
 # remove.packages("00LOCK-Rceattle")
-# devtools::install_github("grantdadams/Rceattle", ref = "dev")
+# devtools::install_github("grantdadams/Rceattle", ref = "dev_srr")
 
 # # Local install
 # devtools::install_local("~/Desktop/Local/Rceattle")
@@ -12,16 +23,19 @@ library(reshape2)
 library(ggplot2)
 library(viridis)
 library(here)
+# devtools::install_github("seananderson/ggsidekick")
 library(ggsidekick)
 # Set ggplot theme
 theme_set(theme_sleek())
 
 # Read in CEATTLE data from the excel file
-hake_data <- read_data(file = "data/hake_yr24_241101.xlsx")
+hake_data <- read_data(file = here("data", "hake_intrasp_250207.xlsx"))
+# hake_data$fleet_control$Age_max_selected = NA
+hake_data$fleet_control$Comp_loglike = 0
 # start_yr <- new_ms$model$data_list$styr
 start_yr <- 1980
 
-### Run and fit the CEATTLE model ---------------------------------------------
+# Run and fit the CEATTLE model -----------------------------------------------
 run_CEATTLE <- function(data, M1, prior, init, initMode, msm, estMode) {
   data$est_M1 <- M1  
   data$styr <- start_yr
@@ -30,21 +44,21 @@ run_CEATTLE <- function(data, M1, prior, init, initMode, msm, estMode) {
                  inits = init,
                  file = NULL, # Don't save
                  msmMode = msm, # Single-species mode - no predation mortality
-                 M1Fun = Rceattle::build_M1(M1_model = M1,
-                                            updateM1 = TRUE,
-                                            M1_use_prior = prior,
-                                            M1_prior_mean = 0.22,
-                                            M1_prior_sd = .31),
+                 M1Fun = build_M1(M1_model = M1,
+                                  updateM1 = TRUE,
+                                  M1_use_prior = prior,
+                                  M_prior = 0.2,
+                                  M_prior_sd = .1),
                  # proj_mean_rec = 0,  # Project the model using: 0 = mean recruitment (average R of hindcast) or 1 = exp(ln_R0 + rec_devs)
                  estimateMode = estMode,  # 0 = Fit the hindcast model and projection with HCR specified via HCR; 1 = hindcast only
-                 HCR = Rceattle::build_hcr(HCR = 6, # Cat 1 HCR
-                                           DynamicHCR = FALSE,
-                                           FsprLimit = 0.4, # F40%
-                                           Ptarget = 0.4, # Target is 40% B0
-                                           Plimit = 0.1, # No fishing when SB<SB10
-                                           Pstar = 0.5,
-                                           Sigma = 0.5),
-                 phase = "default",
+                 HCR = build_hcr(HCR = 6, # Cat 1 HCR
+                                 DynamicHCR = FALSE,
+                                 FsprLimit = 0.4, # F40%
+                                 Ptarget = 0.4, # Target is 40% B0
+                                 Plimit = 0.1, # No fishing when SB<SB10
+                                 Pstar = 0.5,
+                                 Sigma = 0.5),
+                 phase = TRUE,
                  # Update phase to help convergence ---------------------------
                  # phase = list(
                  #   dummy = 1,
@@ -89,9 +103,7 @@ run_CEATTLE <- function(data, M1, prior, init, initMode, msm, estMode) {
                  # ------------------------------------------------------------
                  initMode = initMode,
                  projection_uncertainty = TRUE,
-                 random_rec = FALSE,
-                 suit_styr = 1993,
-                 suit_endyr = 2019) 
+                 random_rec = FALSE) 
   
   objective <- run$opt$objective
   jnll <- run$quantities$jnll
@@ -117,46 +129,52 @@ run_CEATTLE <- function(data, M1, prior, init, initMode, msm, estMode) {
   return(list(model = run, fit = fit))
 }
 
-# Run new model (with cannibalism)
-new_ms <- run_CEATTLE(data = hake_data, 
-                      M1 = 1, 
-                      prior = TRUE, 
-                      init = NULL, 
-                      msm = 1, 
-                      estMode = 1,
-                      initMode = 1)
-
-new_ms$fit  # check convergence
-new_ms$model$quantities$M1
-# save(new_ms, file = "models/2024/new_ms_Oct25.Rdata")
-
 # Run single-species model
-new_ss <- run_CEATTLE(data = hake_data, 
-                      M1 = 0, 
-                      prior = TRUE, 
-                      init = NULL, 
-                      msm = 0, 
-                      estMode = 1,
-                      initMode = 1)
+new_ss_dev <- run_CEATTLE(data = hake_data, 
+                          M1 = 0, 
+                          prior = TRUE, 
+                          init = NULL, 
+                          msm = 0, 
+                          estMode = 1,
+                          initMode = 2)
 # new_ss$fit  # check convergence
-# save(new_ss, file = "models/2024/new_ss_Oct25.Rdata")
+# save(new_ss, file = "models/2024/new_ss_Dec24.Rdata")
+
+# Run new model (with cannibalism)
+new_ms_dev <- run_CEATTLE(data = hake_data, 
+                          M1 = 1, 
+                          prior = TRUE, 
+                          init = new_ss_dev$model$initial_params, 
+                          msm = 1, 
+                          estMode = 0,
+                          initMode = 2)
+# new_ms$fit  # check convergence
+# new_ms$model$quantities$M1
+# save(new_ms, file = "models/2024/new_ms_Dec24.Rdata")
+
+# load(here("models", "2024", "new_ms_Dec24.Rdata"))
+# load(here("models", "2024", "new_ss_Dec24.Rdata"))
+# 
+# plot_biomass(Rceattle = list(new_ss$model, new_ss_dev$model, new_ms$model, new_ms_dev$model), 
+#              model_names = c("SS", "SS dev", "MS", "MS dev"), add_ci = TRUE)
 
 # plot_biomass(Rceattle = list(new_ss$model, new_ms$model), model_names = c("SS", "MS"), add_ci = TRUE)
+# plot_ssb(Rceattle = list(new_ss$model, new_ms$model), model_names = c("SS", "MS"), add_ci = TRUE)
 
-# # Compare to base (publication) model
-# load("models/ms_priorM1.Rdata")
-# 
-# plot_biomass(Rceattle = list(new_ms$model, ms_priorM1$model),
-#              model_names = c("New Model", "Base Model"),
-#              incl_proj = TRUE,
-#              add_ci = TRUE)
-# plot_ssb(Rceattle = list(new_ms$model, ms_priorM1$model),
-#          model_names = c("New Model", "Base Model"),
-#          incl_proj = TRUE,
-#          add_ci = TRUE)
+# Compare to base (publication) model
+load("models/ms_priorM1.Rdata")
+
+plot_biomass(Rceattle = list(new_ms_dev$model, ms_priorM1$model),
+             model_names = c("New Model", "Base Model"),
+             incl_proj = TRUE,
+             add_ci = TRUE)
+plot_ssb(Rceattle = list(new_ms$model, ms_priorM1$model),
+         model_names = c("New Model", "Base Model"),
+         incl_proj = TRUE,
+         add_ci = TRUE)
   
-### Plot multi-species vs. single-species vs. assessment ----------------------
-end_yr <- 2024
+# Plot multispecies vs. single-species ----------------------------------------
+end_yr <- 2027
 years <- start_yr:end_yr
 all_yrs <- start_yr:new_ms$model$data_list$projyr
 hind_end <- 2023
@@ -198,49 +216,24 @@ plot_models <- function(ms_run, ss_run, title = "") {
   }
   # Pull results from CEATTLE models & assessment -----------------------------
   # Pull out biomass from CEATTLE 
-  biomass <- ceattle_biomass(ms_run, "CEATTLE - cannibalism")
-  nodiet_biomass <- ceattle_biomass(ss_run, "CEATTLE - single-species")
-  
-  # Get assessment derived quantities
-  assess <- read.csv(here("data", "assessment", "2024", "median-population-estimates.csv"))
-  
-  # Pull out & format biomass
-  assess_bio <- assess[, c(1, 2, 5)]
-  colnames(assess_bio) <- c("year", "SSB", "Total Biomass")
-  assess_bio[, 2] <- assess_bio[, 2] / 1000  # to millions
-  assess_bio[, 2] <- assess_bio[, 2] * 2 # both sexes
-  assess_bio[, 3] <- assess_bio[, 3] / 1000  # to millions
-  assess_bio <- melt(assess_bio, id.vars = "year")
-  colnames(assess_bio)[2] <- "type"
-  assess_bio$error <- 0
-  assess_bio$model <- "Assessment"
-  assess_bio <- assess_bio %>% filter(year %in% years)
+  biomass <- ceattle_biomass(ms_run, "cannibalism")
+  nodiet_biomass <- ceattle_biomass(ss_run, "single-species")
   
   # Pull out & format recruitment
   nodiet_R <- c(ss_run$quantities$R[, 1:length(start_yr:end_yr)])
   recruitment <- c(ms_run$quantities$R[, 1:length(start_yr:end_yr)])
-  
-  assess_rec <- assess[, c(1, 6)]
-  assess_rec$Year <- assess_rec$Year + 1
-  assess_rec <- assess_rec %>% filter(Year %in% years)
-  assess_rec <- cbind(year = assess_rec$Year,
-                      type = rep("Recruitment"),
-                      value = assess_rec[, 2] / 1000,  
-                      error = 0,
-                      model = "Assessment")
 
   # Put biomass together
-  nodiet_biom <- ceattle_biomass(ss_run, "CEATTLE - single-species")
+  nodiet_biom <- ceattle_biomass(ss_run, "single-species")
 
   # Combine all biomass sources together
   biom_all <- rbind(biomass, nodiet_biom)
   biom_all$value <- biom_all$value / 1000000  # to Mt
   biom_all$error <- biom_all$error / 1000000  # to Mt
-  biom_all <- rbind(biom_all, assess_bio)
 
   # Put recruitment together
   R_wide <- data.frame(year = years, recruitment, nodiet_R)
-  colnames(R_wide)[2:3] <- c("CEATTLE - cannibalism", "CEATTLE - single-species")
+  colnames(R_wide)[2:3] <- c("cannibalism", "single-species")
   R <- melt(R_wide, id.vars = "year")
   R_all <- rbind(cbind(R, error = c(ms_run$sdrep$sd[which(names(ms_run$sdrep$value) == "R")][1:length(start_yr:end_yr)],
                                     ss_run$sdrep$sd[which(names(ss_run$sdrep$value) == "R")][1:length(start_yr:end_yr)])))
@@ -253,40 +246,19 @@ plot_models <- function(ms_run, ss_run, title = "") {
                  value = R_all$value / 1000000,  # to millions
                  error = R_all$error / 1000000,  # to millions
                  model = as.character(R_all$variable))
-  R_new <- rbind(R_new, assess_rec)
   
-  # Combine relative SSB together
-  assess_relSSB <- assess[, c(1, 3)] %>% filter(Year %in% years)
-  relSSB <- rbind.data.frame(cbind.data.frame(depletion = t(ss_run$quantities$depletionSSB)[1:length(years)],
-                                              year = years, 
-                                              model = "CEATTLE - single-species"),
-                             cbind.data.frame(depletion = t(ms_run$quantities$depletionSSB)[1:length(years)],
-                                              year = years, 
-                                              model = "CEATTLE - cannibalism"),
-                             cbind.data.frame(depletion = assess_relSSB[, 2] / 100, # to decimal
-                                              year = years,
-                                              model = "Assessment"))
-  
-  # Set columns to match popdy dataframe
-  relSSB$error <- 0
-  relSSB$type <- "Relative SB"
-  relSSB <- relSSB[, c(2, 5, 1, 4, 3)]
-  colnames(relSSB)[3] <- "value"
-
-  # Combine biomass, recruitment, relative SB 
-  all_popdy <- rbind(biom_all, R_new, relSSB)
+  # Combine biomass, recruitment
+  all_popdy <- rbind(biom_all, R_new)
   all_popdy$year <- as.numeric(all_popdy$year)
   all_popdy$value <- as.numeric(all_popdy$value)
   all_popdy$error <- as.numeric(all_popdy$error)
   all_popdy$model <- factor(all_popdy$model,
-                            levels = c("Assessment", 
-                                       "CEATTLE - single-species", 
-                                       "CEATTLE - cannibalism"))
+                            levels = c("single-species", 
+                                       "cannibalism"))
   all_popdy$type <- factor(all_popdy$type,
                            labels = c("Spawning Biomass (Mt)", 
                                       "Total Biomass (Mt)", 
-                                      "Recruitment (millions)", 
-                                      "Relative Spawning Biomass"))
+                                      "Recruitment (millions)"))
   
   # Add bounds for error & set 0 as minimum for plotting
   all_popdy$min <- all_popdy$value - (2 * all_popdy$error)
@@ -295,14 +267,6 @@ plot_models <- function(ms_run, ss_run, title = "") {
   
   # Plot population dynamics --------------------------------------------------
   popdy_plot <- ggplot(all_popdy, aes(x=year, y=value)) +
-    geom_hline(data = all_popdy %>% filter(type == "Relative Spawning Biomass"),
-               aes(yintercept = 1), col = "gray") +
-    geom_hline(data = all_popdy %>% filter(type == "Relative Spawning Biomass"),
-               aes(yintercept = 0.4), col = "gray") +
-    geom_hline(data = all_popdy %>% filter(type == "Relative Spawning Biomass"),
-               aes(yintercept = 0.1), col = "gray") +
-    geom_hline(data = all_popdy %>% filter(type == "Relative Spawning Biomass"),
-               aes(yintercept = 1.3), col = "white") +  # hack to control y-axis limits for relSSB facet
     geom_line(aes(color = model)) +
     geom_ribbon(aes(ymin=min, ymax=max, fill = model), alpha = 0.2, color = NA) + 
     geom_vline(xintercept = 2024, linetype = 2, colour = "gray") +  # Add line at end of hindcast
@@ -310,7 +274,7 @@ plot_models <- function(ms_run, ss_run, title = "") {
     # xlim(plot_start, NA) +
     ylab(" ") + xlab("Year") +
     labs(color = "Model", fill = "Model") +
-    facet_wrap(~type, ncol = 2, scales = "free_y", strip.position = "left") +
+    facet_wrap(~type, ncol = 1, scales = "free_y", strip.position = "left") +
     theme(strip.background = element_blank(), strip.placement = "outside") +
     ggtitle(title)
     
@@ -319,15 +283,10 @@ plot_models <- function(ms_run, ss_run, title = "") {
 
 plots <- plot_models(new_ms$model, new_ss$model)
 plots$popdy
-plots$diff
 
 ggsave(plots$popdy,
-       file = here("M2", "2024 assessment", "popdy_1993.png"),
-       width=270, height=150, units="mm")
-
-ggsave(plots$diff,
-       file = here("M2", "2024 assessment", "assess_diff_1993.png"),
-       width = 270, height = 90, units = "mm")
+       file = here("M2", "popdy_241126.png"),
+       width=150, height=180, units="mm")
 
 plot_selectivity(new_ms$model)
 
@@ -376,40 +335,21 @@ ms_totM <- ms_mort$total_M %>%
   summarize(M1_M2 = sum(M1_M2))
 
 ms_M2 <- ms_mort$M2[, -4]
-write.csv(ms_M2, here("M2", "M2_241025_init2.csv"), row.names = FALSE)
+write.csv(ms_M2, here("M2", "M2_241126.csv"), row.names = FALSE)
 
 ms_totM_age1 <- ms_totM %>%
   filter(age == 1)
 
-# Compare M2 between equilibrium & non-equilibrium models
-m2_init1 <- read.csv(here("M2", "M2_241025_init1.csv"))
-m2_init1$model <- "Eq, initMode = 1"
-m2_init2 <- read.csv(here("M2", "M2_241025_init2.csv"))
-m2_init2$model <- "Non, initMode = 2"
-
-m2_diff <- rbind.data.frame(m2_init1, m2_init2) %>%
-  filter(year <= 2024) %>%
-  filter(age == 1) %>%
-  ggplot(., aes(x = year, y = M2, color = model)) +
-  geom_line() +
-  ylab("Age 1 M2")
-m2_diff
-
-
-
-# # set up r4ss output (kinda working) ------------------------------------------
-# Dirplot <- here("data", "assessment", "2024", "mcmc", "sso")
+# # Compare M2 between equilibrium & non-equilibrium models
+# m2_init1 <- read.csv(here("M2", "M2_241025_init1.csv"))
+# m2_init1$model <- "Eq, initMode = 1"
+# m2_init2 <- read.csv(here("M2", "M2_241025_init2.csv"))
+# m2_init2$model <- "Non, initMode = 2"
 # 
-# replist <- r4ss::SS_output(
-#   dir = Dirplot,
-#   verbose = TRUE,
-#   printstats = FALSE,
-#   covar = FALSE
-# )
-# 
-# # plots the results (store in the 'plots' sub-directory)
-# r4ss::SS_plots(replist,
-#          dir = Dirplot,
-#          plot = 2:26,
-#          printfolder = 'plots'
-# )
+# m2_diff <- rbind.data.frame(m2_init1, m2_init2) %>%
+#   filter(year <= 2024) %>%
+#   filter(age == 1) %>%
+#   ggplot(., aes(x = year, y = M2, color = model)) +
+#   geom_line() +
+#   ylab("Age 1 M2")
+# m2_diff
